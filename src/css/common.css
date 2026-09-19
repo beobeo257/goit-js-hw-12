@@ -38,8 +38,7 @@ input:focus-visible {
 button {
   border-radius: 8px;
   padding: 8px 16px;
-  width: 75px;
-  max-height: 40px;
+  max-width: 125px;
   background-color: #4e75ff;
   border: none;
   font-family: 'Montserrat', sans-serif;
@@ -54,6 +53,10 @@ button {
 button:hover,
 button:focus {
   background-color: #6c8cff;
+}
+
+.load-more-btn {
+  margin: 32px auto;
 }
 
 .loader {
