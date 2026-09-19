@@ -16,8 +16,10 @@ let currentQuery = '';
 const PER_PAGE = 15;
 
 const searchForm = document.querySelector('form');
+const loadMoreBtn = document.querySelector('.load-more-btn');
 
 searchForm.addEventListener('submit', handleSearch);
+loadMoreBtn.addEventListener('click', handleLoadMore);
 
 async function handleSearch(event) {
   event.preventDefault();
@@ -56,11 +58,7 @@ async function handleSearch(event) {
     }
 
     createGallery(data.hits);
-
-    const totalPages = Math.ceil(data.totalHits / PER_PAGE);
-    if (page < totalPages) {
-      showLoadMoreButton();
-    }
+    checkPaginationEnd(data.totalHits);
   } catch (error) {
     iziToast.error({
       title: 'Error',
@@ -72,12 +70,8 @@ async function handleSearch(event) {
   }
 }
 
-const loadMoreBtn = document.querySelector('.load-more-btn');
-loadMoreBtn.addEventListener('click', handleLoadMore);
-
 async function handleLoadMore() {
   page += 1;
-
   hideLoadMoreButton();
   showLoader();
 
@@ -85,20 +79,7 @@ async function handleLoadMore() {
     const data = await getImagesByQuery(currentQuery, page);
 
     createGallery(data.hits);
-
-    const totalPages = Math.ceil(data.totalHits / PER_PAGE);
-
-    if (page >= totalPages) {
-      iziToast.info({
-        title: 'End of collection',
-        message: "We're sorry, but you've reached the end of search results.",
-        position: 'topRight',
-      });
-    } else {
-      showLoadMoreButton();
-    }
-
-    smoothScroll();
+    checkPaginationEnd(data.totalHits);
   } catch (error) {
     iziToast.error({
       title: 'Error',
@@ -107,6 +88,27 @@ async function handleLoadMore() {
     });
   } finally {
     hideLoader();
+    smoothScroll();
+  }
+}
+
+function checkPaginationEnd(totalHits) {
+  const totalPages = Math.ceil(totalHits / PER_PAGE);
+
+  if (totalHits === 0) {
+    hideLoadMoreButton();
+    return;
+  }
+
+  if (page >= totalPages) {
+    hideLoadMoreButton();
+    iziToast.info({
+      title: 'End of collection',
+      message: "We're sorry, but you've reached the end of search results.",
+      position: 'topRight',
+    });
+  } else {
+    showLoadMoreButton();
   }
 }
 
@@ -115,7 +117,6 @@ function smoothScroll() {
 
   if (firstCard) {
     const { height: cardHeight } = firstCard.getBoundingClientRect();
-
     window.scrollBy({
       top: cardHeight * 2,
       behavior: 'smooth',
